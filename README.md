@@ -11,7 +11,8 @@ A simple AutoHotkey script for quickly launching or switching to your applicatio
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/download/)
 2. Download the script
-   - Clone the repo: `git clone https://github.com/username/repo.git`
+   - Clone the repo: 
+   `git clone https://github.com/kylegl/app-hot-key.git`
    - Or download the `.ahk` file directly from GitHub
 3. Double-click the script to run it
 
@@ -46,18 +47,20 @@ How it works:
 ### Default
 
 ```ahk
-LEADER_KEY := "!Space"   ; Change this to remap the hotkey
-DEBUG_MODE   := false    ; Set to true to enable logging to debug_log.txt
+LEADER_KEY := "!Space"   ; Change this to remap the hotkey trigger
+DEBUG_MODE := false      ; Set to true to enable debug logging
+INPUT_TIMEOUT := 1       ; How long (seconds) to wait for key press
+LOG_FILE_NAME := "debug.log"  ; Debug log filename
 ```
 
-How to change defaults:
+### Customization
 
 **Change the leader key**
-- Find the hotkey definition at the top of the script (e.g., `!Space::`)
-- Replace with your preferred key combination
+- Modify `LEADER_KEY` at the top of the script
+- Example: Change `"!Space"` to `"^Space"` for Ctrl+Space
 
 **Add or change apps**
-- Find the `Apps` Map in the script
+- Edit the `Apps` Map in the script
 - Each entry uses the format: `"key", {Name: "...", Path: "...", Window: "...", TitlePattern: "..."}`
 - Properties:
   - **Name** (required): Display name
@@ -72,12 +75,13 @@ Example:
 ```
 
 **Change slot keys**
-- To use different keys (e.g., letters instead of numbers), change the Map keys and the input validation regex
-- Example: Change `"1"` to `"a"` and update the regex `^[1-5]$` to `^[a-e]$`
+- Edit the Map key to use any character you want (1-9, a-z, etc.)
+- Example: Change `"1"` to `"a"` to use the letter 'a' as a slot key
+- No regex or validation to update
 
 **Enable debug mode**
 - Set `DEBUG_MODE` to `true` at the top of the script
-- Debug logs are written to a log file in the script's directory
+- Debug logs are written to `debug.log` in the script's directory
 - Check the log file for troubleshooting information
 
 ## License
