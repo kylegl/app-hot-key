@@ -75,71 +75,80 @@ Log(message) {
 
 
 ; ============================================================================
+; HELPER FUNCTION: FindTargetWindow
+; Finds the target window handle (hwnd) or returns 0 if not found
+; ============================================================================
+
+FindTargetWindow(windowId, titlePattern := "") {
+    if (titlePattern == "") {
+        ; No pattern: return first matching window
+        return WinExist(windowId)
+    }
+
+    ; With pattern: find first window matching the title regex
+    windows := WinGetList(windowId)
+    for hwnd in windows {
+        title := WinGetTitle("ahk_id " . hwnd)
+        if RegExMatch(title, titlePattern) {
+            return hwnd
+        }
+    }
+    return 0  ; No matching window found
+}
+
+; ============================================================================
+; HELPER FUNCTION: PollForWindow
+; Debug-only polling to verify window appears after launch
+; ============================================================================
+
+PollForWindow(windowId, titlePattern, appName) {
+    maxAttempts := 10  ; 10 checks × 500ms = 5 seconds
+    found := false
+
+    Loop maxAttempts {
+        if (FindTargetWindow(windowId, titlePattern)) {
+            found := true
+            break
+        }
+        Sleep 500
+    }
+
+    if (found) {
+        Log("DEBUG: Window appeared: " . appName)
+    } else {
+        Log("DEBUG: Window did not appear within 5 seconds: " . appName)
+    }
+}
+
+; ============================================================================
 ; CORE FUNCTION: SmartActivate
 ; Handles focus-or-launch logic with optional title pattern matching
 ; ============================================================================
 
 SmartActivate(windowId, filePath, appName, titlePattern := "") {
-    if (titlePattern != "") {
-        ; Get all windows matching the window criteria
-        windows := WinGetList(windowId)
+    ; Find the target window
+    targetHwnd := FindTargetWindow(windowId, titlePattern)
 
-        ; Loop through windows to find first matching title pattern
-        for index, hwnd in windows {
-            title := WinGetTitle("ahk_id " . hwnd)
-            if RegExMatch(title, titlePattern) {
-                if WinActive("ahk_id " . hwnd) {
-                    Log("Already active: " . appName)
-                    return
-                } else {
-                    WinActivate("ahk_id " . hwnd)
-                    Log("Focused existing: " . appName)
-                    return
-                }
-            }
-        }
-        ; No matching window found with title pattern → launch application
-        Log("No matching window, launching: " . appName)
-        try {
-            Run filePath
-            if WinWait(windowId, , 3) {
-                WinActivate(windowId)
-                Log("Launched and focused: " . appName)
-            } else {
-                Log("WinWait timeout for: " . appName)
-            }
-        } catch Error as e {
-            errorMsg := "Could not launch: " . appName . " (" . filePath . ") - " . e.Message
-            Log("ERROR: " . errorMsg)
-            MsgBox errorMsg
-        }
+    ; If window exists, activate it
+    if (targetHwnd) {
+        WinActivate("ahk_id " . targetHwnd)
+        Log("Focused existing: " . appName)
         return
     }
 
-    ; No title pattern: use simple WinExist/WinActivate
-    if WinExist(windowId) {
-        if WinActive(windowId) {
-            Log("Already active: " . appName)
-            return
-        } else {
-            WinActivate(windowId)
-            Log("Focused existing: " . appName)
+    ; Window not found, launch it
+    try {
+        Run(filePath)
+        Log("Launching: " . appName)
+
+        ; Debug mode: poll for window appearance
+        if (DEBUG_MODE) {
+            PollForWindow(windowId, titlePattern, appName)
         }
-    } else {
-        Log("Not running, launching: " . appName)
-        try {
-            Run filePath
-            if WinWait(windowId, , 3) {
-                WinActivate(windowId)
-                Log("Launched and focused: " . appName)
-            } else {
-                Log("WinWait timeout for: " . appName)
-            }
-        } catch Error as e {
-            errorMsg := "Could not launch: " . appName . " (" . filePath . ") - " . e.Message
-            Log("ERROR: " . errorMsg)
-            MsgBox errorMsg
-        }
+    } catch Error as e {
+        errorMsg := "Could not launch: " . appName . " (" . filePath . ") - " . e.Message
+        Log("ERROR: " . errorMsg)
+        MsgBox errorMsg
     }
 }
 
