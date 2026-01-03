@@ -7,6 +7,18 @@
 ; Toggle debug logging - set to true to enable, false to disable
 DEBUG_MODE := false
 
+; Leader key - change this to remap the hotkey trigger
+LEADER_KEY := "!Space"  ; Examples: "^Space" (Ctrl+Space), "#Space" (Win+Space)
+
+; Input timeout - how long (in seconds) to wait for a key press after leader
+INPUT_TIMEOUT := 1
+
+; Slot key validation - regex pattern for valid slot keys
+SLOT_KEYS := "^[1-5]$"  ; Change to ^[a-e]$ for letter keys, ^[1-9]$ for 9 slots
+
+; Log file name - name of the debug log file (created in script directory)
+LOG_FILE_NAME := "debug.log"
+
 ; Application configuration map
 ; Key: Slot number (1-5)
 ; Value: Object with Name, Path, Window, and optional TitlePattern
@@ -21,33 +33,24 @@ Apps := Map(
 ; INITIALIZATION
 ; ============================================================================
 
+; Set up the leader key hotkey
+Hotkey LEADER_KEY, (*) => LeaderKeyPressed()
+
 ; Position tooltips relative to screen
 CoordMode "ToolTip", "Screen"
 
 ; ============================================================================
-; LOGGING FUNCTION
+; HOTKEY HANDLER
 ; ============================================================================
 
-Log(message) {
-    if (DEBUG_MODE) {
-        timestamp := FormatTime(A_Now, "HH:mm:ss")
-        logFile := A_ScriptDir . "\debug.log"
-        FileAppend "[" . timestamp . "] " . message . "`n", logFile
-    }
-}
-
-; ============================================================================
-; HOTKEY: Alt+Space triggers InputHook for keys 1-5
-; ============================================================================
-
-!Space::{
-    ; Wait for a single key press (1 character), timeout after 1 second
-    ih := InputHook("L1 T1")
+LeaderKeyPressed() {
+    ; Wait for a single key press, timeout after configured duration
+    ih := InputHook("L1 T" . INPUT_TIMEOUT)
     ih.Start()
     ih.Wait()
 
-    ; Validate input: must be non-empty and between 1-5
-    if (ih.Input != "" && ih.Input ~= "^[1-5]$") {
+    ; Validate input: must be non-empty and match slot key pattern
+    if (ih.Input != "" && ih.Input ~= SLOT_KEYS) {
         ; Check if this slot has a configured app
         if (!Apps.Has(ih.Input)) {
             Log("No app configured for slot " . ih.Input)
@@ -61,10 +64,24 @@ Log(message) {
         SmartActivate(app.Window, app.Path, app.Name, app.HasProp("TitlePattern") ? app.TitlePattern : "")
         SetTimer RemoveToolTip, -2000
     } else if (ih.Input != "") {
-        ; Input was provided but not 1-5
+        ; Input was provided but doesn't match slot pattern
         Log("Invalid slot: " . ih.Input)
     }
 }
+
+; ============================================================================
+; LOGGING FUNCTION
+; ============================================================================
+
+Log(message) {
+    if (DEBUG_MODE) {
+        timestamp := FormatTime(A_Now, "HH:mm:ss")
+        logFile := A_ScriptDir . "\" . LOG_FILE_NAME
+        FileAppend "[" . timestamp . "] " . message . "`n", logFile
+    }
+}
+
+
 
 ; ============================================================================
 ; CORE FUNCTION: SmartActivate
