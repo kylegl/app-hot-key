@@ -13,9 +13,6 @@ LEADER_KEY := "!Space"  ; Examples: "^Space" (Ctrl+Space), "#Space" (Win+Space)
 ; Input timeout - how long (in seconds) to wait for a key press after leader
 INPUT_TIMEOUT := 1
 
-; Slot key validation - regex pattern for valid slot keys
-SLOT_KEYS := "^[1-5]$"  ; Change to ^[a-e]$ for letter keys, ^[1-9]$ for 9 slots
-
 ; Log file name - name of the debug log file (created in script directory)
 LOG_FILE_NAME := "debug.log"
 
@@ -49,24 +46,18 @@ LeaderKeyPressed() {
     ih.Start()
     ih.Wait()
 
-    ; Validate input: must be non-empty and match slot key pattern
-    if (ih.Input != "" && ih.Input ~= SLOT_KEYS) {
-        ; Check if this slot has a configured app
-        if (!Apps.Has(ih.Input)) {
-            Log("No app configured for slot " . ih.Input)
-            return
-        }
-
-        app := Apps[ih.Input]
-        Log("Processing slot " . ih.Input . ": " . app.Name)
-
-        ToolTip "Opening " . app.Name, A_ScreenWidth - 150, 50
-        SmartActivate(app.Window, app.Path, app.Name, app.HasProp("TitlePattern") ? app.TitlePattern : "")
-        SetTimer RemoveToolTip, -2000
-    } else if (ih.Input != "") {
-        ; Input was provided but doesn't match slot pattern
-        Log("Invalid slot: " . ih.Input)
+    ; Check if this slot has a configured app
+    if (!Apps.Has(ih.Input)) {
+        Log("No app configured for slot " . ih.Input)
+        return
     }
+
+    app := Apps[ih.Input]
+    Log("Processing slot " . ih.Input . ": " . app.Name)
+
+    ToolTip "Opening " . app.Name, A_ScreenWidth - 150, 50
+    SmartActivate(app.Window, app.Path, app.Name, app.HasProp("TitlePattern") ? app.TitlePattern : "")
+    SetTimer RemoveToolTip, -2000
 }
 
 ; ============================================================================
