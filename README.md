@@ -1,6 +1,12 @@
 # App Hot Key
 
+## Description
+
 A simple AutoHotkey script for quickly launching or switching to your applications using keyboard shortcuts.
+
+### Why
+
+I wanted Vim-style chorded keys to jump between the apps I use all day. Windows doesn't really have a good answer for that, and alt tab is for normies <3
 
 ## Requirements
 
@@ -12,8 +18,10 @@ A simple AutoHotkey script for quickly launching or switching to your applicatio
 1. Install [AutoHotkey v2](https://www.autohotkey.com/download/)
 2. Download the script
    - Clone the repo: 
-   `git clone https://github.com/kylegl/app-hot-key.git`
-   - Or download the `.ahk` file directly from GitHub
+   ```
+   git clone https://github.com/kylegl/app-hot-key.git
+   ```
+   - Or download [appHotKey.ahk](https://raw.githubusercontent.com/kylegl/app-hot-key/main/appHotKey.ahk) directly
 3. Double-click the script to run it
 
 ## Auto-start at Startup
@@ -40,11 +48,10 @@ Examples:
 How it works:
 - If the app is already running, it brings it to the foreground
 - If the app is not running, it launches it
-- You can customize which key maps to which app (see Customization)
 
 ## Configuration
 
-### Default
+**Default Configuration**
 
 ```ahk
 LEADER_KEY := "!Space"   ; Change this to remap the hotkey trigger
@@ -75,9 +82,8 @@ Example:
 ```
 
 **Change slot keys**
-- Edit the Map key to use any character you want (1-9, a-z, etc.)
+- Change the `Apps` map keys
 - Example: Change `"1"` to `"a"` to use the letter 'a' as a slot key
-- No regex or validation to update
 
 **Enable debug mode**
 - Set `DEBUG_MODE` to `true` at the top of the script
@@ -86,4 +92,4 @@ Example:
 
 ## License
 
-Free to use and modify for personal purposes.
+[MIT](./LICENSE) License © [Kyle Lauber](https://github.com/kylegl)
